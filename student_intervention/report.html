@@ -11801,7 +11801,7 @@ This is a classification problem. Students either need early intervention or the
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[41]:</div>
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># Import libraries</span>
@@ -11853,7 +11853,7 @@ This is a classification problem. Students either need early intervention or the
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># TODO: Calculate number of students</span>
@@ -11916,7 +11916,7 @@ Graduation rate of the class: 67.09%
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># Extract feature columns</span>
@@ -11998,7 +11998,7 @@ Feature values:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="k">def</span> <span class="nf">preprocess_features</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
@@ -12067,7 +12067,7 @@ Feature values:
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># TODO: Import any additional functionality you may need here</span>
@@ -12078,9 +12078,8 @@ Feature values:
 
 <span class="c1"># Set the number of testing points</span>
 <span class="n">num_test</span> <span class="o">=</span> <span class="n">X_all</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">num_train</span>
-
 <span class="c1"># TODO: Shuffle and split the dataset into the number of training and testing points above</span>
-<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X_all</span><span class="p">,</span> <span class="n">y_all</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="n">num_train</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X_all</span><span class="p">,</span> <span class="n">y_all</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">y_all</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="n">num_train</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 
 <span class="c1"># Show the results of the split</span>
 <span class="k">print</span> <span class="s2">&quot;Training set has {} samples.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -12151,9 +12150,61 @@ Testing set has 95 samples.
 <p><strong>Answer: </strong>
 The three supervised learning models that are appropriate for this problem are:</p>
 <ul>
-<li>Decision Trees</li>
-<li>Support Vector Machines</li>
-<li>K-Nearest Neighbors</li>
+<li><p><strong>Algorithm 1: Decision Trees</strong></p>
+<ul>
+<li>Application: Astronomy: <a href="http://adsabs.harvard.edu/abs/1995AJ....109.2401W">Automated Star/Galaxy Classification</a></li>
+<li><p>Strengths: <a href="http://scikit-learn.org/stable/modules/tree.html">Reference</a></p>
+<ul>
+<li>Trees can be visualized and are therefore easier to understand and interpret.</li>
+<li>Performs well even if the model deviates somewhat from the data used to generate the model.</li>
+<li>The cost of using the tree is logarithmic in the number of points used to train the tree.</li>
+</ul>
+</li>
+<li><p>Weaknesses:</p>
+<ul>
+<li>Decision Trees are easy to overfit</li>
+<li>Small variation of data can create markedly different decision trees - making the model unstable.</li>
+<li>Decision Trees may result in creating models that generate local optima and may therefore not guarantee a global optimal solution</li>
+</ul>
+</li>
+<li>Why this model was chosen: <code>DecisionTreeClassifier</code> provides a reasonable (logarithmic in number of training points) cost mothod to predict whether student intervention is needed. That is why this model was chosen.</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>Algorithm 2: Support Vector Machines</strong><ul>
+<li>Application: [Text Classification] (<a href="https://www.cs.cornell.edu/people/tj/publications/joachims_98a.pdf">https://www.cs.cornell.edu/people/tj/publications/joachims_98a.pdf</a>)</li>
+<li>Strengths <a href="http://scikit-learn.org/stable/modules/svm.html">Reference</a>:<ul>
+<li>Effective in high dimensional spaces</li>
+<li>Memory Efficient: Uses support vectors that comprise a subset of data points to define the classification boundary</li>
+<li>Can use multiple kernel functions and are therefore versatile.</li>
+</ul>
+</li>
+<li>Weaknesses:<ul>
+<li>If the number of features is much greater than the number of samples, SVM gives poor performance</li>
+<li>While SVMs classify the samples, they do not directly privide probability estimates</li>
+</ul>
+</li>
+<li>Why this model was chosen: SVMs are effective tools for classification especially when the dataset has a large number of features. Since this dataset has a sizeable number of features (48), I chose SVM.</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><strong>Algorithm 3: K-Nearest Neighbors</strong><ul>
+<li>Application: <a href="http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2243774/">Breast Cancer Diagnosis</a></li>
+<li>Strengths <a href="http://www.cs.upc.edu/~bejar/apren/docum/trans/03d-algind-knn-eng.pdf">Reference</a>:<ul>
+<li>The cost of learning is almost zero</li>
+<li>The model can infer data of arbitrary complexity</li>
+</ul>
+</li>
+<li>Weaknesses:<ul>
+<li>Computationally expensive to find <code>k</code> nearest neighbors when the dataset is very large</li>
+<li>As the number of dimensions increase, the number of examples needed to make predictions significantly increases.</li>
+</ul>
+</li>
+<li>Why this model was chosen: In many cases KNN has a sufficiently distributed training set that is good enough to make accurate predictions. I chose this model to evaluate its performance against the other methods.</li>
+</ul>
+</li>
 </ul>
 
 </div>
