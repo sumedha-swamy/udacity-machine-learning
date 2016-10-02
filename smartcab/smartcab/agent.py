@@ -1,0 +1,88 @@
+import random
+from environment import Agent, Environment
+from planner import RoutePlanner
+from simulator import Simulator
+from collections import namedtuple
+
+class LearningAgent(Agent):
+    """An agent that learns to drive in the smartcab world."""
+
+    def __init__(self, env):
+        super(LearningAgent, self).__init__(env)  # sets self.env = env, state = None, next_waypoint = None, and a default color
+        self.color = 'red'  # override color
+        self.planner = RoutePlanner(self.env, self)  # simple route planner to get next_waypoint
+        self.index_to_action_words = {0:None, 1:'forward', 2:'left', 3:'right'}
+        self.action_words_to_index = {None:0, 'forward':1, 'left':2, 'right':3}
+        self.initialize_qtable()
+        # TODO: Initialize any additional variables here 
+
+    def initialize_qtable(self):
+        self.states = namedtuple("states",['light','oncoming','left','right','next_waypoint'])
+        self.qtable = {}
+        for light in ['red', 'green']:
+            for oncoming in [None, 'forward', 'left', 'right']:
+                for left in [None, 'forward', 'left', 'right']:
+                    for right in [None, 'forward', 'left', 'right']:
+                        for next_waypoint in [None, 'forward', 'left', 'right']:                        
+                            self.qtable[self.states(light=light,oncoming=oncoming, right=right,
+                                left=left, next_waypoint=next_waypoint)] = [0,0,0,0]
+                            # [0,0,0,0] = [None, 'forward', 'left', 'right']
+        
+    def reset(self, destination=None):
+        self.planner.route_to(destination)
+        # TODO: Prepare for a new trip; reset any variables here, if required
+
+    def update(self, t):
+        # Gather inputs
+        self.next_waypoint = self.planner.next_waypoint()  # from route planner, also displayed by simulator
+        inputs = self.env.sense(self)
+        deadline = self.env.get_deadline(self)
+
+        # TODO: Update state
+        state = self.states(light=inputs['light'],oncoming=inputs['oncoming'], left=inputs['left'], 
+            right=inputs['right'], next_waypoint=self.next_waypoint)
+        
+        # TODO: Select action according to your policy
+        maxq = max(self.qtable[state])
+        max_indices = []
+        for i, j in enumerate(self.qtable[state]):
+            if j == maxq:
+                max_indices.append(i)
+                
+        action = self.index_to_action_words[random.choice(max_indices)]
+
+        # Execute action and get reward
+        reward = self.env.act(self, action)
+
+        #print "Debug: next_waypoint = {}, action = {}, reward = {}".format(self.next_waypoint, action, reward)  # [debug]
+
+        # TODO: Learn policy based on state, action, reward
+        #Q(state, action) = R(state, action) + Gamma * Max[Q(next state, all actions)]
+        next_state_sense = self.env.sense(self)
+        next_state = self.states(light=next_state_sense['light'],oncoming=next_state_sense['oncoming'],
+         right=next_state_sense['right'], left=next_state_sense['left'], next_waypoint=self.planner.next_waypoint())
+        self.qtable[state][self.action_words_to_index[action]] = reward + max(self.qtable[next_state])
+
+        #print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, #action, reward)  # [debug]
+
+
+def run():
+    """Run the agent for a finite number of trials."""
+
+    # Set up environment and agent
+    e = Environment()  # create environment (also adds some dummy traffic)
+    a = e.create_agent(LearningAgent)  # create agent
+    e.set_primary_agent(a, enforce_deadline=True)  # specify agent to track
+    # NOTE: You can set enforce_deadline=False while debugging to allow longer trials
+
+    # Now simulate it
+    sim = Simulator(e, update_delay=0.5, display=True)  # create simulator (uses pygame when display=True, if available)
+    # NOTE: To speed up simulation, reduce update_delay and/or set display=False
+
+    sim.run(n_trials=100)  # run for a specified number of trials
+    # NOTE: To quit midway, press Esc or close pygame window, or hit Ctrl+C on the command-line
+    #print a.qtable.values()
+
+
+if __name__ == '__main__':
+    run()
