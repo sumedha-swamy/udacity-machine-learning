@@ -3,6 +3,8 @@ from environment import Agent, Environment
 from planner import RoutePlanner
 from simulator import Simulator
 from collections import namedtuple
+import math
+import numpy as np
 
 class LearningAgent(Agent):
     """An agent that learns to drive in the smartcab world."""
@@ -14,6 +16,10 @@ class LearningAgent(Agent):
         self.index_to_action_words = {0:None, 1:'forward', 2:'left', 3:'right'}
         self.action_words_to_index = {None:0, 'forward':1, 'left':2, 'right':3}
         self.initialize_qtable()
+        self.trial = 0
+        self.gamma = 0.8
+        self.alpha_control = 25.0
+        self.epsilon = 0.05
         # TODO: Initialize any additional variables here 
 
     def initialize_qtable(self):
@@ -31,6 +37,7 @@ class LearningAgent(Agent):
     def reset(self, destination=None):
         self.planner.route_to(destination)
         # TODO: Prepare for a new trip; reset any variables here, if required
+        self.trial += 1
 
     def update(self, t):
         # Gather inputs
@@ -49,7 +56,10 @@ class LearningAgent(Agent):
             if j == maxq:
                 max_indices.append(i)
                 
-        action = self.index_to_action_words[random.choice(max_indices)]
+        best_action = self.index_to_action_words[random.choice(max_indices)]
+        action = np.random.choice(
+            [best_action,random.choice([None, 'forward', 'left', 'right'])],
+                p=[1-self.epsilon, self.epsilon])
 
         # Execute action and get reward
         reward = self.env.act(self, action)
@@ -58,12 +68,15 @@ class LearningAgent(Agent):
 
         # TODO: Learn policy based on state, action, reward
         #Q(state, action) = R(state, action) + Gamma * Max[Q(next state, all actions)]
+        alpha = math.exp(-self.trial/self.alpha_control)
         next_state_sense = self.env.sense(self)
         next_state = self.states(light=next_state_sense['light'],oncoming=next_state_sense['oncoming'],
          right=next_state_sense['right'], left=next_state_sense['left'], next_waypoint=self.planner.next_waypoint())
-        self.qtable[state][self.action_words_to_index[action]] = reward + max(self.qtable[next_state])
+        self.qtable[state][self.action_words_to_index[action]] = (
+            (1 - alpha) * (self.qtable[state][self.action_words_to_index[action]]) + 
+            (alpha) * (reward + self.gamma * max(self.qtable[next_state])))
 
-        #print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, #action, reward)  # [debug]
+        print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, action, reward)  # [debug]
 
 
 def run():
