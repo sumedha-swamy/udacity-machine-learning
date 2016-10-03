@@ -17,9 +17,10 @@ class LearningAgent(Agent):
         self.action_words_to_index = {None:0, 'forward':1, 'left':2, 'right':3}
         self.initialize_qtable()
         self.trial = 0
-        self.gamma = 0.8
-        self.alpha_control = 25.0
-        self.epsilon = 0.05
+        self.outcomes = []
+        self.gamma = 0.7
+        self.alpha_control = 2000.0 #Increasing this increases learning
+        self.epsilon = 0.01 # Exploration Rate
         # TODO: Initialize any additional variables here 
 
     def initialize_qtable(self):
@@ -64,8 +65,6 @@ class LearningAgent(Agent):
         # Execute action and get reward
         reward = self.env.act(self, action)
 
-        #print "Debug: next_waypoint = {}, action = {}, reward = {}".format(self.next_waypoint, action, reward)  # [debug]
-
         # TODO: Learn policy based on state, action, reward
         #Q(state, action) = R(state, action) + Gamma * Max[Q(next state, all actions)]
         alpha = math.exp(-self.trial/self.alpha_control)
@@ -89,12 +88,14 @@ def run():
     # NOTE: You can set enforce_deadline=False while debugging to allow longer trials
 
     # Now simulate it
-    sim = Simulator(e, update_delay=0.5, display=True)  # create simulator (uses pygame when display=True, if available)
+    sim = Simulator(e, update_delay=0, display=False)  # create simulator (uses pygame when display=True, if available)
     # NOTE: To speed up simulation, reduce update_delay and/or set display=False
 
     sim.run(n_trials=100)  # run for a specified number of trials
     # NOTE: To quit midway, press Esc or close pygame window, or hit Ctrl+C on the command-line
     #print a.qtable.values()
+    print a.outcomes
+    print (10.0+sum(a.outcomes[91:]))*10.0
 
 
 if __name__ == '__main__':
