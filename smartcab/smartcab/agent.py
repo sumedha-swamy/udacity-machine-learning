@@ -18,7 +18,7 @@ class LearningAgent(Agent):
         self.initialize_qtable()
         self.trial = 0
         self.outcomes = []
-        self.gamma = 0.7
+        self.gamma = 0.8
         self.alpha_control = 2000.0 #Increasing this increases learning
         self.epsilon = 0.01 # Exploration Rate
         # TODO: Initialize any additional variables here 
