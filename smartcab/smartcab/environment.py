@@ -87,7 +87,7 @@ class Environment(object):
         destination = random.choice(self.intersections.keys())
 
         # Ensure starting location and destination are not too close
-        while self.compute_dist(start, destination) < 4:
+        while self.compute_dist(start, destination) != 10:
             start = random.choice(self.intersections.keys())
             destination = random.choice(self.intersections.keys())
 
@@ -123,11 +123,9 @@ class Environment(object):
             if agent_deadline <= self.hard_time_limit:
                 self.done = True
                 print "Environment.step(): Primary agent hit hard time limit ({})! Trial aborted.".format(self.hard_time_limit)
-                self.primary_agent.outcomes.append(-2)
             elif self.enforce_deadline and agent_deadline <= 0:
                 self.done = True
                 print "Environment.step(): Primary agent ran out of time! Trial aborted."
-                self.primary_agent.outcomes.append(-1)
             self.agent_states[self.primary_agent]['deadline'] = agent_deadline - 1
 
         self.t += 1
@@ -206,6 +204,8 @@ class Environment(object):
         else:
             # Invalid move
             reward = -1.0
+            if agent is self.primary_agent:
+                agent.penalty += 1
 
         if agent is self.primary_agent:
             if state['location'] == state['destination']:
@@ -213,7 +213,7 @@ class Environment(object):
                     reward += 10  # bonus
                 self.done = True
                 print "Environment.act(): Primary agent has reached destination!"  # [debug]
-                self.primary_agent.outcomes.append(0)
+                agent.reached_destination = True
             self.status_text = "state: {}\naction: {}\nreward: {}".format(agent.get_state(), action, reward)
             #print "Environment.act() [POST]: location: {}, heading: {}, action: {}, reward: {}".format(location, heading, action, reward)  # [debug]
 

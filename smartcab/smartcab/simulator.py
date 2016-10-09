@@ -2,6 +2,7 @@ import os
 import time
 import random
 import importlib
+import matplotlib.pyplot as plt
 
 class Simulator(object):
     """Simulates agents in a dynamic smartcab environment.
@@ -37,6 +38,10 @@ class Simulator(object):
         self.update_delay = update_delay  # duration between each step (in secs)
 
         self.display = display
+        self.primary_agent_reward = []
+        self.primary_agent_reached = []
+        self.primary_agent_steps = []
+        self.primary_agent_penalty = []
         if self.display:
             try:
                 self.pygame = importlib.import_module('pygame')
@@ -102,8 +107,31 @@ class Simulator(object):
                     if self.quit or self.env.done:
                         break
 
+            # Reward this Trial
+            self.primary_agent_reward.append(self.env.primary_agent.reward)
+            # Reached Destination
+            self.primary_agent_reached.append(self.env.primary_agent.reached_destination)
+            # Number of steps
+            self.primary_agent_steps.append(self.env.primary_agent.steps)
+            # Penalties
+            self.primary_agent_penalty.append(self.env.primary_agent.penalty)
+            
             if self.quit:
                 break
+        plt.subplot(4,1,1)
+        plt.plot(self.primary_agent_reward)
+        plt.ylabel("Reward")
+        plt.subplot(4,1,2)
+        plt.plot(self.primary_agent_reached)
+        plt.ylabel("Reached")
+        plt.subplot(4,1,3)
+        plt.plot(self.primary_agent_steps)
+        plt.ylabel("Steps")
+        plt.subplot(4,1,4)
+        plt.plot(self.primary_agent_penalty)
+        plt.ylabel("Penalty")
+        plt.show()
+
 
     def render(self):
         # Clear screen

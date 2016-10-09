@@ -16,12 +16,15 @@ class LearningAgent(Agent):
         self.index_to_action_words = {0:None, 1:'forward', 2:'left', 3:'right'}
         self.action_words_to_index = {None:0, 'forward':1, 'left':2, 'right':3}
         self.initialize_qtable()
-        self.trial = 0
-        self.outcomes = []
-        self.gamma = 0.8
-        self.alpha_control = 2000.0 #Increasing this increases learning
+        self.gamma = 0.0
+        self.alpha_control = 125.0 #Increasing this increases learning
         self.epsilon = 0.01 # Exploration Rate
         # TODO: Initialize any additional variables here 
+        self.trial_count = 0.0
+        self.reward = 0
+        self.reached_destination = False
+        self.steps = 0
+        self.penalty = 0
 
     def initialize_qtable(self):
         self.states = namedtuple("states",['light','oncoming','left','right','next_waypoint'])
@@ -38,13 +41,19 @@ class LearningAgent(Agent):
     def reset(self, destination=None):
         self.planner.route_to(destination)
         # TODO: Prepare for a new trip; reset any variables here, if required
-        self.trial += 1
+        self.trial_count += 1
+        self.reward = 0
+        self.reached_destination = False
+        self.steps = 0
+        self.penalty = 0
 
     def update(self, t):
         # Gather inputs
         self.next_waypoint = self.planner.next_waypoint()  # from route planner, also displayed by simulator
         inputs = self.env.sense(self)
         deadline = self.env.get_deadline(self)
+        self.steps += 1
+        
 
         # TODO: Update state
         state = self.states(light=inputs['light'],oncoming=inputs['oncoming'], left=inputs['left'], 
@@ -61,13 +70,13 @@ class LearningAgent(Agent):
         action = np.random.choice(
             [best_action,random.choice([None, 'forward', 'left', 'right'])],
                 p=[1-self.epsilon, self.epsilon])
-
+                
         # Execute action and get reward
         reward = self.env.act(self, action)
 
         # TODO: Learn policy based on state, action, reward
-        #Q(state, action) = R(state, action) + Gamma * Max[Q(next state, all actions)]
-        alpha = math.exp(-self.trial/self.alpha_control)
+        #Q(state, action) = (1- alpha)*Q + alpha*(R(state, action) + Gamma * Max[Q(next state, all actions)])
+        alpha = math.exp(-self.trial_count/self.alpha_control)
         next_state_sense = self.env.sense(self)
         next_state = self.states(light=next_state_sense['light'],oncoming=next_state_sense['oncoming'],
          right=next_state_sense['right'], left=next_state_sense['left'], next_waypoint=self.planner.next_waypoint())
@@ -76,6 +85,7 @@ class LearningAgent(Agent):
             (alpha) * (reward + self.gamma * max(self.qtable[next_state])))
 
         print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, action, reward)  # [debug]
+        self.reward += reward
 
 
 def run():
@@ -94,8 +104,6 @@ def run():
     sim.run(n_trials=100)  # run for a specified number of trials
     # NOTE: To quit midway, press Esc or close pygame window, or hit Ctrl+C on the command-line
     #print a.qtable.values()
-    print a.outcomes
-    print (10.0+sum(a.outcomes[91:]))*10.0
 
 
 if __name__ == '__main__':
